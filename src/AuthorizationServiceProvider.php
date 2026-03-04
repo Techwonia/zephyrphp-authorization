@@ -2,10 +2,10 @@
 
 declare(strict_types=1);
 
-namespace Zephyr\Authorization;
+namespace ZephyrPHP\Authorization;
 
-use Zephyr\Container\Container;
-use Zephyr\Config\Config;
+use ZephyrPHP\Container\Container;
+use ZephyrPHP\Config\Config;
 
 class AuthorizationServiceProvider
 {

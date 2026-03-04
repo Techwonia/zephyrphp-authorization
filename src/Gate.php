@@ -2,10 +2,10 @@
 
 declare(strict_types=1);
 
-namespace Zephyr\Authorization;
+namespace ZephyrPHP\Authorization;
 
-use Zephyr\Auth\Auth;
-use Zephyr\Auth\AuthenticatableInterface;
+use ZephyrPHP\Auth\Auth;
+use ZephyrPHP\Auth\AuthenticatableInterface;
 
 /**
  * Authorization Gate

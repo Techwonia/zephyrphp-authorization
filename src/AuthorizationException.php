@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace Zephyr\Authorization;
+namespace ZephyrPHP\Authorization;
 
 /**
  * Authorization Exception

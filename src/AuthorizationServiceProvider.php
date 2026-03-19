@@ -30,14 +30,25 @@ class AuthorizationServiceProvider
         }
 
         // Register before callback for super admins
-        $superAdminAbility = Config::get('authorization.super_admin_ability');
-        if ($superAdminAbility) {
-            Gate::before(function ($user, $ability) use ($superAdminAbility) {
-                if ($user && method_exists($user, 'hasRole') && $user->hasRole('super-admin')) {
+        $superAdminRole = Config::get('authorization.super_admin_ability');
+        if ($superAdminRole) {
+            // Handle boolean true as default 'super-admin' role slug
+            if ($superAdminRole === true) {
+                $superAdminRole = 'super-admin';
+            }
+            Gate::before(function ($user, $ability) use ($superAdminRole) {
+                if ($user && method_exists($user, 'hasRole') && $user->hasRole($superAdminRole)) {
                     return true;
                 }
                 return null;
             });
         }
+
+        // Wire auto-discovery and policy namespace
+        $autoDiscover = Config::get('authorization.auto_discover', true);
+        Gate::setAutoDiscover($autoDiscover);
+
+        $policyNamespace = Config::get('authorization.policy_namespace', 'App\\Policies\\');
+        Gate::setPolicyNamespace($policyNamespace);
     }
 }

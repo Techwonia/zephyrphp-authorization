@@ -45,6 +45,12 @@ class Gate
     /** @var callable|null User resolver */
     private static $userResolver = null;
 
+    /** @var string Namespace for auto-discovered policies */
+    private static string $policyNamespace = 'App\\Policies\\';
+
+    /** @var bool Whether auto-discovery of policies is enabled */
+    private static bool $autoDiscover = true;
+
     /**
      * Define an authorization ability
      *
@@ -113,6 +119,11 @@ class Gate
     public static function check(string $ability, mixed ...$arguments): bool
     {
         $user = self::resolveUser();
+
+        // Deny by default for unauthenticated users
+        if ($user === null) {
+            return false;
+        }
 
         // Run before callbacks
         foreach (self::$beforeCallbacks as $callback) {
@@ -210,7 +221,7 @@ class Gate
     public static function authorize(string $ability, mixed ...$arguments): void
     {
         if (self::denies($ability, ...$arguments)) {
-            throw new AuthorizationException("This action is unauthorized: {$ability}");
+            throw new AuthorizationException("This action is unauthorized.", $ability);
         }
     }
 
@@ -225,6 +236,10 @@ class Gate
         $class = is_object($model) ? get_class($model) : $model;
 
         if (!isset(self::$policies[$class])) {
+            if (!self::$autoDiscover) {
+                return null;
+            }
+
             // Try to auto-discover policy
             $policyClass = self::guessPolicyName($class);
             if (class_exists($policyClass)) {
@@ -235,6 +250,11 @@ class Gate
         }
 
         $policyClass = self::$policies[$class];
+
+        if (!class_exists($policyClass)) {
+            return null;
+        }
+
         return new $policyClass();
     }
 
@@ -333,13 +353,30 @@ class Gate
     }
 
     /**
+     * Set the namespace used for auto-discovering policies
+     */
+    public static function setPolicyNamespace(string $namespace): void
+    {
+        self::$policyNamespace = rtrim($namespace, '\\') . '\\';
+    }
+
+    /**
+     * Enable or disable auto-discovery of policies
+     */
+    public static function setAutoDiscover(bool $enabled): void
+    {
+        self::$autoDiscover = $enabled;
+    }
+
+    /**
      * Guess the policy name for a model
      */
     private static function guessPolicyName(string $model): string
     {
         // App\Models\Post => App\Policies\PostPolicy
         $class = class_basename($model);
-        $namespace = 'App\\Policies\\';
+        $namespace = $_ENV['POLICY_NAMESPACE'] ?? self::$policyNamespace;
+        $namespace = rtrim($namespace, '\\') . '\\';
 
         return $namespace . $class . 'Policy';
     }
@@ -361,7 +398,11 @@ class Gate
     }
 
     /**
-     * Reset all gates (for testing)
+     * Reset all static state.
+     *
+     * Must be called between requests in long-running environments
+     * (e.g., Swoole, RoadRunner, ReactPHP) to prevent state leaking
+     * across requests.
      */
     public static function reset(): void
     {
@@ -370,5 +411,7 @@ class Gate
         self::$beforeCallbacks = [];
         self::$afterCallbacks = [];
         self::$userResolver = null;
+        self::$policyNamespace = 'App\\Policies\\';
+        self::$autoDiscover = true;
     }
 }

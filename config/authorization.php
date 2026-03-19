@@ -30,7 +30,7 @@ return [
     | authorization checks. Set to false to disable.
     |
     */
-    'super_admin_ability' => true,
+    'super_admin_ability' => 'super-admin',
 
     /*
     |--------------------------------------------------------------------------

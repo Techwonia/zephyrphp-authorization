@@ -41,15 +41,26 @@ trait HasRoles
     }
 
     /**
+     * Check if user has a specific role by slug (canonical identifier)
+     */
+    public function hasRole(string $roleSlug): bool
+    {
+        foreach ($this->getRoles() as $role) {
+            if (method_exists($role, 'getSlug') && $role->getSlug() === $roleSlug) {
+                return true;
+            }
+        }
+
+        return false;
+    }
+
+    /**
      * Check if user has a specific role by name
      */
-    public function hasRole(string $roleName): bool
+    public function hasRoleByName(string $roleName): bool
     {
         foreach ($this->getRoles() as $role) {
             if (method_exists($role, 'getName') && $role->getName() === $roleName) {
-                return true;
-            }
-            if (method_exists($role, 'getSlug') && $role->getSlug() === $roleName) {
                 return true;
             }
         }
@@ -93,9 +104,7 @@ trait HasRoles
     public function assignRole(object|string $role): self
     {
         if (is_string($role)) {
-            // Caller must resolve the Role entity before assigning
-            // This is a convenience check — if a string is passed, skip silently
-            return $this;
+            throw new \InvalidArgumentException("assignRole() requires a Role entity, not a string. Use assignRoleByName() or pass a Role object.");
         }
 
         if (!$this->getRoles()->contains($role)) {
@@ -136,7 +145,10 @@ trait HasRoles
      */
     public function syncRoles(array $roles): self
     {
-        $this->roles = new ArrayCollection($roles);
+        $this->roles->clear();
+        foreach ($roles as $role) {
+            $this->roles->add($role);
+        }
         return $this;
     }
 

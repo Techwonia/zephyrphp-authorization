@@ -5,8 +5,8 @@
     "license": "MIT",
     "require": {
         "php": ">=8.2",
-        "zephyrphp/framework": "^0.1|dev-main",
-        "zephyrphp/auth": "^0.1|dev-main"
+        "zephyrphp/framework": "^0.4",
+        "zephyrphp/auth": "^0.4"
     },
     "autoload": {
         "psr-4": {

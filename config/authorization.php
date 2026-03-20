@@ -51,5 +51,5 @@ return [
     | The namespace where policies are located for auto-discovery.
     |
     */
-    'policy_namespace' => 'App\\Policies\\',
+    'policy_namespace' => '', // Auto-detected from composer.json PSR-4 mapping
 ];

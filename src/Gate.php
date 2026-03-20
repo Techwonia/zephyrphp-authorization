@@ -46,7 +46,7 @@ class Gate
     private static $userResolver = null;
 
     /** @var string Namespace for auto-discovered policies */
-    private static string $policyNamespace = 'App\\Policies\\';
+    private static string $policyNamespace = '';
 
     /** @var bool Whether auto-discovery of policies is enabled */
     private static bool $autoDiscover = true;
@@ -411,7 +411,7 @@ class Gate
         self::$beforeCallbacks = [];
         self::$afterCallbacks = [];
         self::$userResolver = null;
-        self::$policyNamespace = 'App\\Policies\\';
+        self::$policyNamespace = '';
         self::$autoDiscover = true;
     }
 }

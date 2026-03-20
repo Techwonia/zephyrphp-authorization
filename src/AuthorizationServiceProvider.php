@@ -48,7 +48,33 @@ class AuthorizationServiceProvider
         $autoDiscover = Config::get('authorization.auto_discover', true);
         Gate::setAutoDiscover($autoDiscover);
 
-        $policyNamespace = Config::get('authorization.policy_namespace', 'App\\Policies\\');
+        $policyNamespace = Config::get('authorization.policy_namespace', '');
+        if (empty($policyNamespace)) {
+            $policyNamespace = $this->detectPolicyNamespace();
+        }
         Gate::setPolicyNamespace($policyNamespace);
+    }
+
+    private function detectPolicyNamespace(): string
+    {
+        $basePath = defined('BASE_PATH') ? BASE_PATH : getcwd();
+        $composerFile = $basePath . '/composer.json';
+
+        if (file_exists($composerFile)) {
+            $composer = json_decode(file_get_contents($composerFile), true);
+            $psr4 = $composer['autoload']['psr-4'] ?? [];
+            foreach ($psr4 as $namespace => $path) {
+                $policiesDir = $basePath . '/' . rtrim($path, '/') . '/Policies';
+                if (is_dir($policiesDir)) {
+                    return rtrim($namespace, '\\') . '\\Policies\\';
+                }
+            }
+            // Use the first PSR-4 namespace as base
+            foreach ($psr4 as $namespace => $path) {
+                return rtrim($namespace, '\\') . '\\Policies\\';
+            }
+        }
+
+        return 'App\\Policies\\';
     }
 }

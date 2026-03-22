@@ -101,11 +101,8 @@ trait HasRoles
      *
      * @param object|string $role Role entity instance or role name
      */
-    public function assignRole(object|string $role): self
+    public function assignRole(object $role): self
     {
-        if (is_string($role)) {
-            throw new \InvalidArgumentException("assignRole() requires a Role entity, not a string. Use assignRoleByName() or pass a Role object.");
-        }
 
         if (!$this->getRoles()->contains($role)) {
             $this->getRoles()->add($role);
@@ -145,6 +142,7 @@ trait HasRoles
      */
     public function syncRoles(array $roles): self
     {
+        $this->initializeRoles();
         $this->roles->clear();
         foreach ($roles as $role) {
             $this->roles->add($role);
